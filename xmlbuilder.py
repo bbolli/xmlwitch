@@ -51,7 +51,7 @@ class builder:
   def write(self, line):
     if self.unicode:
       line = line.decode('utf-8')
-    self.document.write('%s%s' % ((self.indentation * self.indent), line))
+    self.document.write('%s%s\n' % (self.indentation * self.indent, line))
 
 _dummy = {}
 
@@ -61,19 +61,19 @@ class element:
     self.builder = builder
     self.serialized_attrs = ''
   def __enter__(self):
-    self.builder.write('<%s%s>\n' % (self.name, self.serialized_attrs))
+    self.builder.write('<%s%s>' % (self.name, self.serialized_attrs))
     self.builder.indentation += 1
     return self
   def __exit__(self, type, value, tb):
     self.builder.indentation -= 1
-    self.builder.write('</%s>\n' % self.name)
+    self.builder.write('</%s>' % self.name)
   def __call__(self, _value=_dummy, **kargs):
     if kargs:
       self.serialized_attrs = self.serialize_attrs(kargs)
     if _value is None:
-      self.builder.write('<%s%s />\n' % (self.name, self.serialized_attrs))
+      self.builder.write('<%s%s />' % (self.name, self.serialized_attrs))
     elif _value is not _dummy:
-      self.builder.write('<%s%s>%s</%s>\n' % (self.name, self.serialized_attrs, escape(_value), self.name))
+      self.builder.write('<%s%s>%s</%s>' % (self.name, self.serialized_attrs, escape(_value), self.name))
       return
     return self
   def serialize_attrs(self, attrs):
@@ -82,7 +82,7 @@ class element:
       serialized.append(' %s="%s"' % (nameprep(attr), escape(value, attr_escape)))
     return ''.join(serialized)
   def text(self, value):
-    self.builder.write(escape(value) + '\n')
+    self.builder.write(escape(value))
 
 if __name__ == "__main__":
   xml = builder(version="1.0", encoding="utf-8")
