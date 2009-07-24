@@ -22,8 +22,14 @@ def escape(s, escapes=text_escape):
         s = s.replace(orig, esc)
     return s
 
+# prepare the keyword unmangling dictionary
+import keyword
+kwunmangle = dict([(k + '_', k) for k in keyword.kwlist])
+del keyword, k
+
 def nameprep(name):
-    """Undo colon mangling"""
+    """Undo keyword and colon mangling"""
+    name = kwunmangle.get(name, name)
     return name.replace('__', ':')
 
 class builder:
@@ -92,4 +98,7 @@ if __name__ == "__main__":
       xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
       xml.updated('2003-12-13T18:30:02Z')
       xml.summary('Some text.')
+      with xml.content(type='xhtml'):
+        with xml.div(xmlns='http://www.w3.org/1999/xhtml'):
+          xml.label('Some label', for_='some_field')
   print xml
