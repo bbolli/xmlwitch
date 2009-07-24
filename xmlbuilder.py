@@ -22,6 +22,10 @@ def escape(s, escapes=text_escape):
         s = s.replace(orig, esc)
     return s
 
+def nameprep(name):
+    """Undo colon mangling"""
+    return name.replace('__', ':')
+
 class builder:
   def __init__(self, version, encoding):
     self.document = StringIO()
@@ -47,7 +51,7 @@ _dummy = {}
 
 class element:
   def __init__(self, name, builder):
-    self.name = name
+    self.name = nameprep(name)
     self.builder = builder
     self.serialized_attrs = ''
   def __enter__(self):
@@ -68,7 +72,7 @@ class element:
   def serialize_attrs(self, attrs):
     serialized = []
     for attr, value in attrs.items():
-      serialized.append(' %s="%s"' % (attr, escape(value, attr_escape)))
+      serialized.append(' %s="%s"' % (nameprep(attr), escape(value, attr_escape)))
     return ''.join(serialized)
 
 if __name__ == "__main__":
@@ -81,7 +85,7 @@ if __name__ == "__main__":
       xml.name('John Doe')
     xml.id('urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6')
     with xml.entry:
-      xml["my:namespace"]("Hello these are namespaces!")
+      xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
       xml.quoting("< > & ' \"", attr="< > & ' \"")
       xml.title('Atom-Powered Robots Run Amok')
       xml.link(None, href='http://example.org/2003/12/13/atom03')
