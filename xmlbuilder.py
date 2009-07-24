@@ -1,26 +1,10 @@
 from __future__ import with_statement
 from StringIO import StringIO
-from exceptions import UnicodeDecodeError
+from xml.sax.saxutils import escape, quoteattr
 
 __all__ = ['__author__', '__license__', 'builder', 'element']
 __author__ = ('Jonas Galvez', 'jonas@codeazur.com.br', 'http://jonasgalvez.com.br')
 __license__ = "GPL"
-
-text_escape = (                 # special characters in text
-  ('&', '&amp;'),
-  ('<', '&lt;'),
-  ('>', '&gt;'),
-)
-attr_escape = text_escape + (   # special characters in attribute values
-  ('"', '&quot;'),
-  ("'", '&apos;'),
-)
-
-def escape(s, escapes=text_escape):
-    """Escape special characters in s."""
-    for orig, esc in escapes:
-        s = s.replace(orig, esc)
-    return s
 
 # prepare the keyword unmangling dictionary
 import keyword
@@ -79,7 +63,7 @@ class element:
   def serialize_attrs(self, attrs):
     serialized = []
     for attr, value in attrs.items():
-      serialized.append(' %s="%s"' % (nameprep(attr), escape(value, attr_escape)))
+      serialized.append(' %s=%s' % (nameprep(attr), quoteattr(value)))
     return ''.join(serialized)
   def text(self, value):
     self.builder._write(escape(value))
