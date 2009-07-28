@@ -52,8 +52,7 @@ class element:
     self.builder._indentation -= 1
     self.builder._write('</%s>' % self.name)
   def __call__(self, _value=_dummy, **kargs):
-    if kargs:
-      self.serialized_attrs = self.serialize_attrs(kargs)
+    self.serialized_attrs = self.serialize_attrs(kargs)
     if _value is None:
       self.builder._write('<%s%s />' % (self.name, self.serialized_attrs))
     elif _value is not _dummy:
@@ -61,10 +60,10 @@ class element:
       return
     return self
   def serialize_attrs(self, attrs):
-    serialized = []
-    for attr, value in attrs.items():
-      serialized.append(' %s=%s' % (nameprep(attr), quoteattr(value)))
-    return ''.join(serialized)
+    return ''.join([
+        ' %s=%s' % (nameprep(attr), quoteattr(value))
+        for attr, value in attrs.items()
+    ])
   def text(self, value):
     self.builder._write(escape(value))
 
