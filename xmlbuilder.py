@@ -78,6 +78,7 @@ if __name__ == "__main__":
   xml = builder()
   with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
     xml.title('Example Feed')
+    # None is required for empty elements
     xml.link(None, href='http://example.org/')
     xml.updated('2003-12-13T18:30:02Z')
     with xml.author:
