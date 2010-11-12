@@ -65,7 +65,6 @@ class element:
       self.builder._write('<%s%s />' % (self.name, self.serialized_attrs))
     elif _value is not _dummy:
       self.builder._write('<%s%s>%s</%s>' % (self.name, self.serialized_attrs, escape(_value), self.name))
-      return
     return self
   def serialize_attrs(self, attrs):
     return ''.join([
