@@ -50,6 +50,7 @@ class element:
     self.builder._indentation += 1
     return self
   def __exit__(self, type, value, tb):
+    if type: return False  # reraise exceptions
     self.builder._indentation -= 1
     self.builder._write('</%s>' % self.name)
   def __call__(self, _value=_dummy, **kargs):
