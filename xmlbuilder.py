@@ -41,10 +41,14 @@ class builder:
 _dummy = {}
 
 class element:
-  def __init__(self, name, builder):
+  def __init__(self, name, builder, outer=None):
     self.name = nameprep(name)
     self.builder = builder
+    self.outer = outer
     self.serialized_attrs = ''
+  def __getattr__(self, name):
+    self.__enter__()
+    return element(name, self.builder, self)
   def __enter__(self):
     self.builder._write('<%s%s>' % (self.name, self.serialized_attrs))
     self.builder._indentation += 1
@@ -53,6 +57,8 @@ class element:
     if type: return False  # reraise exceptions
     self.builder._indentation -= 1
     self.builder._write('</%s>' % self.name)
+    if self.outer is not None:
+      self.outer.__exit__(None, None, None)
   def __call__(self, _value=_dummy, **kargs):
     self.serialized_attrs = self.serialize_attrs(kargs)
     if _value is None:
@@ -86,9 +92,8 @@ if __name__ == "__main__":
       xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
       xml.updated('2003-12-13T18:30:02Z')
       xml.summary('Some text.')
-      with xml.content(type='xhtml'):
-        with xml.div(xmlns='http://www.w3.org/1999/xhtml') as div:
-          xml.label('Some label', for_='some_field')
-          div.text(':')
-          xml.input(None, type='text', value='')
+      with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml') as div:
+        xml.label('Some label', for_='some_field')
+        div.text(':')
+        xml.input(None, type='text', value='')
   print xml
