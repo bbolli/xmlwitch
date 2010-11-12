@@ -19,7 +19,8 @@ def nameprep(name):
 class builder:
   def __init__(self, version='1.0', encoding='utf-8'):
     self._document = StringIO()
-    self._document.write('<?xml version="%s" encoding="%s"?>\n' % (version, encoding))
+    if version and encoding:
+      self._document.write('<?xml version="%s" encoding="%s"?>\n' % (version, encoding))
     self._unicode = (encoding == 'utf-8')
     self._indentation = 0
     self._indent = '  '
