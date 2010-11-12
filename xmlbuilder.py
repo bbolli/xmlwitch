@@ -38,9 +38,8 @@ class builder:
       line = line.decode('utf-8')
     self._document.write('%s%s\n' % (self._indentation * self._indent, line))
 
-_dummy = {}
-
 class element:
+  _dummy = {}
   def __init__(self, name, builder, outer=None):
     self.name = nameprep(name)
     self.builder = builder
@@ -63,7 +62,7 @@ class element:
     self.serialized_attrs = self.serialize_attrs(kargs)
     if _value is None:
       self.builder._write('<%s%s />' % (self.name, self.serialized_attrs))
-    elif _value is not _dummy:
+    elif _value is not self._dummy:
       self.builder._write('<%s%s>%s</%s>' % (self.name, self.serialized_attrs, escape(_value), self.name))
     return self
   def serialize_attrs(self, attrs):
