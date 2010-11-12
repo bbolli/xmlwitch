@@ -17,7 +17,7 @@ def nameprep(name):
     return name.replace('__', ':')
 
 class builder:
-  def __init__(self, version, encoding):
+  def __init__(self, version='1.0', encoding='utf-8'):
     self._document = StringIO()
     self._document.write('<?xml version="%s" encoding="%s"?>\n' % (version, encoding))
     self._unicode = (encoding == 'utf-8')
@@ -68,7 +68,7 @@ class element:
     self.builder._write(escape(value))
 
 if __name__ == "__main__":
-  xml = builder(version="1.0", encoding="utf-8")
+  xml = builder()
   with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
     xml.title('Example Feed')
     xml.link(None, href='http://example.org/')
