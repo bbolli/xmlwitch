@@ -59,17 +59,14 @@ class element:
     if self.outer is not None:
       self.outer.__exit__(None, None, None)
   def __call__(self, _value=_dummy, **kargs):
-    self.serialized_attrs = self.serialize_attrs(kargs)
+    self._serialized_attrs = ''.join([
+      ' %s=%s' % (nameprep(attr), quoteattr(value)) for attr, value in kargs.items()
+    ])
     if _value is None:
       self.builder._write('<%s%s />' % (self.name, self.serialized_attrs))
     elif _value is not self._dummy:
       self.builder._write('<%s%s>%s</%s>' % (self.name, self.serialized_attrs, escape(_value), self.name))
     return self
-  def serialize_attrs(self, attrs):
-    return ''.join([
-        ' %s=%s' % (nameprep(attr), quoteattr(value))
-        for attr, value in attrs.items()
-    ])
   def text(self, value):
     self.builder._write(escape(value))
 
