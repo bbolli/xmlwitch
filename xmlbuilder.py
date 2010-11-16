@@ -67,7 +67,7 @@ class element:
     elif _value is not self._dummy:
       self._builder._write('<%s%s>%s</%s>' % (self._name, self._serialized_attrs, escape(_value), self._name))
     return self
-  def text(self, value):
+  def __getitem__(self, value):
     self._builder._write(escape(value))
 
 if __name__ == "__main__":
@@ -90,6 +90,6 @@ if __name__ == "__main__":
       xml.summary('Some text.')
       with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml') as div:
         xml.label('Some label', for_='some_field')
-        div.text(':')
+        div[':']
         xml.input(None, type='text', value='')
   print xml
