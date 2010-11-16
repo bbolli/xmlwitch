@@ -41,34 +41,34 @@ class builder:
 class element:
   _dummy = {}
   def __init__(self, name, builder, outer=None):
-    self.name = nameprep(name)
-    self.builder = builder
-    self.outer = outer
-    self.serialized_attrs = ''
+    self._name = nameprep(name)
+    self._builder = builder
+    self._outer = outer
+    self._serialized_attrs = ''
   def __getattr__(self, name):
     self.__enter__()
-    return element(name, self.builder, self)
+    return element(name, self._builder, self)
   def __enter__(self):
-    self.builder._write('<%s%s>' % (self.name, self.serialized_attrs))
-    self.builder._indentation += 1
+    self._builder._write('<%s%s>' % (self._name, self._serialized_attrs))
+    self._builder._indentation += 1
     return self
   def __exit__(self, type, value, tb):
     if type: return False  # reraise exceptions
-    self.builder._indentation -= 1
-    self.builder._write('</%s>' % self.name)
-    if self.outer is not None:
-      self.outer.__exit__(None, None, None)
+    self._builder._indentation -= 1
+    self._builder._write('</%s>' % self._name)
+    if self._outer is not None:
+      self._outer.__exit__(None, None, None)
   def __call__(self, _value=_dummy, **kargs):
     self._serialized_attrs = ''.join([
       ' %s=%s' % (nameprep(attr), quoteattr(value)) for attr, value in kargs.items()
     ])
     if _value is None:
-      self.builder._write('<%s%s />' % (self.name, self.serialized_attrs))
+      self._builder._write('<%s%s />' % (self._name, self._serialized_attrs))
     elif _value is not self._dummy:
-      self.builder._write('<%s%s>%s</%s>' % (self.name, self.serialized_attrs, escape(_value), self.name))
+      self._builder._write('<%s%s>%s</%s>' % (self._name, self._serialized_attrs, escape(_value), self._name))
     return self
   def text(self, value):
-    self.builder._write(escape(value))
+    self._builder._write(escape(value))
 
 if __name__ == "__main__":
   xml = builder()
