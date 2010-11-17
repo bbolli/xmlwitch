@@ -26,7 +26,8 @@ class builder:
     self._indent = '  '
   def __getattr__(self, name):
     return element(name, self)
-  __getitem__ = __getattr__
+  def __getitem__(self, value):
+    self._write(escape(value))
   def __str__(self):
     if self._unicode:
       return self._document.getvalue().encode('utf-8')
@@ -88,8 +89,8 @@ if __name__ == "__main__":
       xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
       xml.updated('2003-12-13T18:30:02Z')
       xml.summary('Some text.')
-      with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml') as div:
+      with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml'):
         xml.label('Some label', for_='some_field')
-        div[':']
+        xml[':']
         xml.input(None, type='text', value='')
   print xml
