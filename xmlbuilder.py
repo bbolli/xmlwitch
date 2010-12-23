@@ -17,13 +17,13 @@ def nameprep(name):
     return name.replace('__', ':')
 
 class builder:
-  def __init__(self, version='1.0', encoding='utf-8'):
+  def __init__(self, version='1.0', encoding='utf-8', indent='  '):
     self._document = StringIO()
-    if version and encoding:
-      self._document.write('<?xml version="%s" encoding="%s"?>\n' % (version, encoding))
     self._unicode = (encoding == 'utf-8')
     self._indentation = 0
-    self._indent = '  '
+    self._indent = indent
+    if version and encoding:
+      self._write('<?xml version="%s" encoding="%s"?>' % (version, encoding))
   def __getattr__(self, name):
     return element(name, self)
   def __getitem__(self, value):
@@ -37,7 +37,10 @@ class builder:
   def _write(self, line):
     if self._unicode:
       line = line.decode('utf-8')
-    self._document.write('%s%s\n' % (self._indentation * self._indent, line))
+    if self._indent is None:
+      self._document.write(line)
+    else:
+      self._document.write('%s%s\n' % (self._indentation * self._indent, line))
 
 class element:
   _dummy = {}
