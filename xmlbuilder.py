@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from __future__ import with_statement
 from StringIO import StringIO
 from xml.sax.saxutils import escape, quoteattr
@@ -19,7 +21,7 @@ def nameprep(name):
 class builder:
   def __init__(self, version='1.0', encoding='utf-8', indent='  '):
     self._document = StringIO()
-    self._unicode = (encoding == 'utf-8')
+    self._encoding = encoding
     self._indentation = 0
     self._indent = indent
     if version and encoding:
@@ -29,14 +31,17 @@ class builder:
   def __getitem__(self, value):
     self._write(escape(value))
   def __str__(self):
-    if self._unicode:
-      return self._document.getvalue().encode('utf-8')
+    if self._encoding:
+      return self._document.getvalue().encode(self._encoding)
     return self._document.getvalue()
   def __unicode__(self):
-    return self._document.getvalue().decode('utf-8')
+    return self._document.getvalue().decode(self._encoding)
+  def _enc(self, value):
+    if type(value) is unicode: return value.encode(self._encoding)
+    return value
   def _write(self, line):
-    if self._unicode:
-      line = line.decode('utf-8')
+    if self._encoding:
+      line = line.decode(self._encoding)
     if self._indent is None:
       self._document.write(line)
     else:
@@ -64,11 +69,12 @@ class element:
       self._outer.__exit__(None, None, None)
   def __call__(self, _value=_dummy, **kargs):
     self._serialized_attrs = ''.join([
-      ' %s=%s' % (nameprep(attr), quoteattr(value)) for attr, value in kargs.items()
+      ' %s=%s' % (nameprep(attr), quoteattr(self._builder._enc(value))) for attr, value in kargs.items()
     ])
     if _value is None:
       self._builder._write('<%s%s />' % (self._name, self._serialized_attrs))
     elif _value is not self._dummy:
+      _value = self._builder._enc(_value)
       self._builder._write('<%s%s>%s</%s>' % (self._name, self._serialized_attrs, escape(_value), self._name))
     return self
   def __getitem__(self, value):
@@ -87,6 +93,8 @@ if __name__ == "__main__":
     with xml.entry:
       xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
       xml.quoting("< > & ' \"", attr="< > & ' \"")
+      xml.unicode(u"¡Thìs ïs å tést!", at=u'“—”')
+      xml.unicode("¡Thìs ïs å tést!", at='“—”')
       xml.title('Atom-Powered Robots Run Amok')
       xml.link(None, href='http://example.org/2003/12/13/atom03')
       xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
