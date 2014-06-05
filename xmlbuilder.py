@@ -49,14 +49,12 @@ class builder:
 
 class element:
   _dummy = {}
-  def __init__(self, name, builder, outer=None):
+  def __init__(self, name, builder):
     self._name = nameprep(name)
     self._builder = builder
-    self._outer = outer
     self._serialized_attrs = ''
   def __getattr__(self, name):
-    self.__enter__()
-    return element(name, self._builder, self)
+    return element(name, self._builder)
   def __enter__(self):
     self._builder._write(u'<%s%s>' % (self._name, self._serialized_attrs))
     self._builder._indentation += 1
@@ -65,8 +63,6 @@ class element:
     if type: return False  # reraise exceptions
     self._builder._indentation -= 1
     self._builder._write(u'</%s>' % self._name)
-    if self._outer is not None:
-      self._outer.__exit__(None, None, None)
   def __call__(self, _value=_dummy, **kargs):
     self._serialized_attrs = ''.join([
       u' %s=%s' % (nameprep(attr), quoteattr(self._builder._enc(value))) for attr, value in kargs.items()
@@ -88,7 +84,7 @@ if __name__ == "__main__":
     xml.link(None, href='http://example.org/')
     xml.updated('2003-12-13T18:30:02Z')
     with xml.author:
-      xml.name('John Doe')
+      xml.name('John Doe').email('jd@example.org')
     xml.id('urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6')
     with xml.entry:
       xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
