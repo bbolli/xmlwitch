@@ -75,6 +75,7 @@ class element:
     return self
   def __getitem__(self, value):
     self._builder._write(escape(value))
+    return self
 
 if __name__ == "__main__":
   xml = builder()
@@ -97,7 +98,5 @@ if __name__ == "__main__":
       xml.updated('2003-12-13T18:30:02Z')
       xml.summary('Some text.')
       with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml'):
-        xml.label('Some label', for_='some_field')
-        xml[':']
-        xml.input(None, type='text', value='')
+        xml.label('Some label', for_='some_field')[':'].input(None, type='text', value='')
   print unicode(xml)
