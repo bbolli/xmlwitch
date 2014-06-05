@@ -18,12 +18,12 @@ def nameprep(name):
     return name.replace('__', ':')
 
 class builder:
-  def __init__(self, version='1.0', encoding='utf-8', indent='  '):
+  def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
     self._document = [u'']
     self._encoding = encoding
     self._indentation = 0
     self._indent = indent
-    self.__write = self._document.append
+    self.__write = stream.write if stream else self._document.append
     if version and encoding:
       self._write(u'<?xml version="%s" encoding="%s"?>' % (version, encoding))
   def __getattr__(self, name):
