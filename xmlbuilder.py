@@ -23,6 +23,7 @@ class builder:
     self._encoding = encoding
     self._indentation = 0
     self._indent = indent
+    self.__write = self._document.append
     if version and encoding:
       self._write(u'<?xml version="%s" encoding="%s"?>' % (version, encoding))
   def __getattr__(self, name):
@@ -42,10 +43,9 @@ class builder:
     return value
   def _write(self, line):
     line = self._enc(line)
-    if self._indent is None:
-      self._document.append(line)
-    else:
-      self._document.append(u'%s%s\n' % (self._indentation * self._indent, line))
+    if self._indent is not None:
+      line = u'%s%s\n' % (self._indentation * self._indent, line)
+    self.__write(line)
 
 class element:
   _dummy = {}
