@@ -37,7 +37,7 @@ class Builder:
         return ''.join(self._document)
 
     def __bytes__(self):
-        return str(self).encode(self.encoding)
+        return str(self).encode(self._encoding, 'xmlcharrefreplace')
 
     def _write(self, line, indent=0):
         if indent < 0:
