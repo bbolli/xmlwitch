@@ -1,8 +1,8 @@
 from xml.sax.saxutils import escape, quoteattr
 
-__all__ = ['__author__', '__license__', 'builder', 'element']
+__all__ = ['__author__', '__license__', 'Builder', 'Element']
 __author__ = ('Beat Bolli', 'me+python@drbeat.li', 'https://drbeat.li/py/')
-__license__ = "GPL"
+__license__ = "GPL3+"
 
 # prepare the keyword unmangling dictionary
 import keyword
@@ -16,7 +16,7 @@ def nameprep(name):
     return name.replace('__', ':')
 
 
-class builder:
+class Builder:
 
     def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
         self._document = ['']
@@ -28,7 +28,7 @@ class builder:
             self._write(f'<?xml version="{version}" encoding="{encoding}"?>')
 
     def __getattr__(self, name):
-        return element(name, self)
+        return Element(name, self)
 
     def __getitem__(self, value):
         self._write(escape(value))
@@ -45,7 +45,7 @@ class builder:
         self.__write(line)
 
 
-class element:
+class Element:
     _empty = object()
 
     def __init__(self, name, builder):
@@ -54,7 +54,7 @@ class element:
         self._serialized_attrs = ''
 
     def __getattr__(self, name):
-        return element(name, self._builder)
+        return Element(name, self._builder)
 
     def __enter__(self):
         self._builder._write(f'<{self._name}{self._serialized_attrs}>')
@@ -83,7 +83,7 @@ class element:
 
 
 if __name__ == "__main__":
-    xml = builder()
+    xml = Builder()
     with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
         xml.title('Example Feed')
         # None is required for empty elements
