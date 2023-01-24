@@ -1,6 +1,6 @@
 from xml.sax.saxutils import escape, quoteattr
 
-__all__ = ['__author__', '__license__', 'Builder', 'Element']
+__all__ = ['__author__', '__license__', 'Builder', 'Safe', 'Element']
 __author__ = ('Beat Bolli', 'me+python@drbeat.li', 'https://drbeat.li/py/')
 __license__ = "GPL3+"
 
@@ -49,6 +49,16 @@ class Builder:
             self._indentation += indent
 
 
+class Safe:
+
+    def __init__(self, v):
+        self.content = v.content if isinstance(v, Safe) else v
+
+    def apply(self, fn):
+        self.content = fn(self.content)
+        return self
+
+
 class Element:
     _empty = object()
 
@@ -74,13 +84,15 @@ class Element:
             f' {nameprep(attr)}={quoteattr(value)}' for attr, value in attrs.items()
         )
         if _value is None:
-            self._builder._write(f'<{self._name}{self._serialized_attrs} />')
+            self._builder._write(f'<{self._name}{self._serialized_attrs}/>')
         elif _value is not self._empty:
-            self._builder._write(f'<{self._name}{self._serialized_attrs}>{escape(_value)}</{self._name}>')
+            _value = _value.content if isinstance(_value, Safe) else escape(_value)
+            self._builder._write(f'<{self._name}{self._serialized_attrs}>{_value}</{self._name}>')
         return self
 
     def __getitem__(self, value):
-        self._builder._write(escape(value))
+        value = value.content if isinstance(value, Safe) else escape(value)
+        self._builder._write(value)
         return self
 
 
@@ -97,7 +109,7 @@ if __name__ == "__main__":
         with xml.entry:
             xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
             xml.quoting("< > & ' \"", attr="< > & ' \"")
-            xml.str("¡Thìs ïs å tést!", at='“—”')
+            xml.quoting(Safe("<em> &amp; </em> ' \""), attr="< > & ' \"")
             xml.str("¡Thìs ïs å tést!", attr='“—”')
             xml.title('Atom-Powered Robots Run Amok')
             xml.link(None, href='http://example.org/2003/12/13/atom03')
