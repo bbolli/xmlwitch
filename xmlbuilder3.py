@@ -39,10 +39,14 @@ class Builder:
     def __bytes__(self):
         return str(self).encode(self.encoding)
 
-    def _write(self, line):
+    def _write(self, line, indent=0):
+        if indent < 0:
+            self._indentation += indent
         if self._indent is not None:
             line = self._indentation * self._indent + line + '\n'
         self.__write(line)
+        if indent > 0:
+            self._indentation += indent
 
 
 class Element:
@@ -57,15 +61,13 @@ class Element:
         return Element(name, self._builder)
 
     def __enter__(self):
-        self._builder._write(f'<{self._name}{self._serialized_attrs}>')
-        self._builder._indentation += 1
+        self._builder._write(f'<{self._name}{self._serialized_attrs}>', +1)
         return self
 
     def __exit__(self, typ, value, tb):
         if typ:
             return False  # reraise exceptions
-        self._builder._indentation -= 1
-        self._builder._write(f'</{self._name}>')
+        self._builder._write(f'</{self._name}>', -1)
 
     def __call__(self, _value=_empty, **attrs):
         self._serialized_attrs = ''.join(
