@@ -97,7 +97,8 @@ class Element:
 
 
 if __name__ == "__main__":
-    xml = Builder()
+    import sys
+    xml = Builder(stream=sys.stdout)
     with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
         xml.title('Example Feed')
         # None is required for empty elements
@@ -118,4 +119,3 @@ if __name__ == "__main__":
             xml.summary('Some text.')
             with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml'):
                 xml.label('Some label', for_='some_field')[':'].input(None, type='text', value='')
-    print(str(xml))
