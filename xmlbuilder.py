@@ -35,7 +35,7 @@ class Builder:
         return Element(name, self)
 
     def __getitem__(self, value):
-        self._write(escape(value))
+        self._write(safevalue(value))
 
     def __str__(self):
         return ''.join(self._document)
