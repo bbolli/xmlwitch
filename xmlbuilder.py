@@ -16,6 +16,10 @@ def nameprep(name):
     return name.replace('__', ':')
 
 
+def safevalue(value):
+    return value.content if isinstance(value, Safe) else escape(value)
+
+
 class Builder:
 
     def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
@@ -87,13 +91,11 @@ class Element:
         if _value is None:
             self._builder._write(f'<{self._name}{self._serialized_attrs}/>')
         elif _value is not self._empty:
-            _value = _value.content if isinstance(_value, Safe) else escape(_value)
-            self._builder._write(f'<{self._name}{self._serialized_attrs}>{_value}</{self._name}>')
+            self._builder._write(f'<{self._name}{self._serialized_attrs}>{safevalue(_value)}</{self._name}>')
         return self
 
     def __getitem__(self, value):
-        value = value.content if isinstance(value, Safe) else escape(value)
-        self._builder._write(value)
+        self._builder._write(safevalue(value))
         return self
 
 
