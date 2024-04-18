@@ -24,6 +24,10 @@ def safevalue(value):
     return value if isinstance(value, Safe) else escape(value)
 
 
+def safeattr(value):
+    return f'"{value}"' if isinstance(value, Safe) else quoteattr(value)
+
+
 class Builder:
 
     def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
@@ -79,7 +83,7 @@ class Element:
 
     def __call__(self, _value=_empty, **attrs):
         self._serialized_attrs = ''.join(
-            f' {nameprep(attr)}={quoteattr(value)}'
+            f' {nameprep(attr)}={safeattr(value)}'
             for attr, value in attrs.items() if value is not None
         )
         if _value is None:
@@ -107,7 +111,7 @@ if __name__ == "__main__":
         with xml.entry:
             xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
             xml.quoting("< > & ' \"", attr="< > & ' \"")
-            xml.quoting(Safe("<em> &amp; </em> ' \""), attr="< > & ' \"")
+            xml.safe(Safe("<em> &amp; </em> ' \""), attr=Safe("&lt; &gt; &amp; '"))
             xml.str("¡Thìs ïs å tést!", attr='“—”')
             xml.title('Atom-Powered Robots Run Amok')
             xml.link(None, href='http://example.org/2003/12/13/atom03')
