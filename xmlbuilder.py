@@ -58,10 +58,6 @@ class Safe:
     def __init__(self, v):
         self.content = v.content if isinstance(v, Safe) else v
 
-    def apply(self, fn):
-        self.content = fn(self.content)
-        return self
-
 
 class Element:
     _empty = object()
