@@ -16,8 +16,12 @@ def nameprep(name):
     return name.replace('__', ':')
 
 
+class Safe(str):
+    pass
+
+
 def safevalue(value):
-    return value.content if isinstance(value, Safe) else escape(value)
+    return value if isinstance(value, Safe) else escape(value)
 
 
 class Builder:
@@ -51,12 +55,6 @@ class Builder:
         self.__write(line)
         if indent > 0:
             self._indentation += indent
-
-
-class Safe:
-
-    def __init__(self, v):
-        self.content = v.content if isinstance(v, Safe) else v
 
 
 class Element:
