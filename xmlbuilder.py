@@ -83,13 +83,13 @@ class Element:
     def __init__(self, name, builder):
         self._name = nameprep(name)
         self._builder = builder
-        self._serialized_attrs = ''
+        self._attrs = ''
 
     def __getattr__(self, name):
         return Element(name, self._builder)
 
     def __enter__(self):
-        self._builder._write(f'<{self._name}{self._serialized_attrs}>', +1)
+        self._builder._write(f'<{self._name}{self._attrs}>', +1)
         return self
 
     def __exit__(self, typ, value, tb):
@@ -97,15 +97,15 @@ class Element:
             return False  # reraise exceptions
         self._builder._write(f'</{self._name}>', -1)
 
-    def __call__(self, _value=_empty, **attrs):
-        self._serialized_attrs = ''.join(
+    def __call__(self, _value=_empty, _pre='', _post='', **attrs):
+        self._attrs = ''.join(
             f' {nameprep(attr)}={safeattr(value)}'
             for attr, value in attrs.items() if value is not None
         )
         if _value is None:
-            self._builder._write(f'<{self._name}{self._serialized_attrs}{self._builder._end_empty_tag}')
+            self._builder._write(f'{safevalue(_pre)}<{self._name}{self._attrs}{self._builder._end_empty_tag}{safevalue(_post)}')
         elif _value is not self._empty:
-            self._builder._write(f'<{self._name}{self._serialized_attrs}>{safevalue(_value)}</{self._name}>')
+            self._builder._write(f'{safevalue(_pre)}<{self._name}{self._attrs}>{safevalue(_value)}</{self._name}>{safevalue(_post)}')
         return self
 
     def __getitem__(self, value):
@@ -140,5 +140,5 @@ if __name__ == "__main__":
     html = HTMLBuilder(stream=sys.stdout)
     with html.html(lang='en'):
         html.p('p1')
-        html.br(None)
+        html.br(None, _pre="<br> next:")
         html.p('p2')
