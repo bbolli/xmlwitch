@@ -1,6 +1,6 @@
 from xml.sax.saxutils import escape, quoteattr
 
-__all__ = ['__author__', '__license__', 'Builder', 'Safe', 'Element']
+__all__ = ['__author__', '__license__', 'Builder', 'XMLBuilder', 'HTMLBuilder', 'Safe', 'Element']
 __author__ = ('Beat Bolli', 'me+python@drbeat.li', 'https://drbeat.li/py/')
 __license__ = "GPL3+"
 
@@ -28,7 +28,9 @@ def safeattr(value):
     return f'"{value}"' if isinstance(value, Safe) else quoteattr(value)
 
 
-class Builder:
+class XMLBuilder:
+
+    _end_empty_tag = '/>'
 
     def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
         self._document = ['']
@@ -61,6 +63,20 @@ class Builder:
             self._indentation += indent
 
 
+Builder = XMLBuilder  # backwards compatibility
+
+
+class HTMLBuilder(XMLBuilder):
+
+    _end_empty_tag = '>'
+
+    def __init__(self, encoding='utf-8', indent='  ', stream=None):
+        super().__init__(version=None, encoding=encoding, indent=indent, stream=stream)
+        if encoding:
+            self._write('<!DOCTYPE html>')
+            self.meta(None, charset=encoding)
+
+
 class Element:
     _empty = object()
 
@@ -87,7 +103,7 @@ class Element:
             for attr, value in attrs.items() if value is not None
         )
         if _value is None:
-            self._builder._write(f'<{self._name}{self._serialized_attrs}/>')
+            self._builder._write(f'<{self._name}{self._serialized_attrs}{self._builder._end_empty_tag}')
         elif _value is not self._empty:
             self._builder._write(f'<{self._name}{self._serialized_attrs}>{safevalue(_value)}</{self._name}>')
         return self
@@ -99,7 +115,7 @@ class Element:
 
 if __name__ == "__main__":
     import sys
-    xml = Builder(stream=sys.stdout)
+    xml = XMLBuilder(stream=sys.stdout)
     with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
         xml.title('Example Feed')
         # None is required for empty elements
@@ -120,3 +136,9 @@ if __name__ == "__main__":
             xml.summary('Some text.')
             with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml'):
                 xml.label('Some label', for_='some_field')[':'].input(None, type='text', value='')
+    print()
+    html = HTMLBuilder(stream=sys.stdout)
+    with html.html(lang='en'):
+        html.p('p1')
+        html.br(None)
+        html.p('p2')
