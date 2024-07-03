@@ -135,10 +135,21 @@ if __name__ == "__main__":
             xml.updated('2003-12-13T18:30:02Z')
             xml.summary('Some text.')
             with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml'):
-                xml.label('Some label', for_='some_field')[':'].input(None, type='text', value='')
+                xml.label('Some label', for_='some_field', _post=':').input(None, type='text', value='', id='some_field')
+
+    xml = XMLBuilder(encoding='iso-8859-1')
+    xml.tag('€')
+    assert '€' in str(xml)
+    assert b'&#8364;' in bytes(xml)
+
     print()
-    html = HTMLBuilder(stream=sys.stdout)
+    html = HTMLBuilder()
     with html.html(lang='en'):
         html.p('p1')
         html.br(None, _pre="<br> next:")
         html.p('p2')
+    actual = str(html)
+    assert '<p>p1</p>' in actual
+    assert '&lt;br&gt; next:<br>' in actual
+    assert '<p>p2</p>' in actual
+    print(actual)
