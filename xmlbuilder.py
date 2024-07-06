@@ -46,6 +46,7 @@ class XMLBuilder:
 
     def __getitem__(self, value):
         self._write(safevalue(value))
+        return self
 
     def __str__(self):
         return ''.join(self._document)
