@@ -31,6 +31,7 @@ def safeattr(value):
 class XMLBuilder:
 
     _end_empty_tag = '/>'
+    _empty_tags = set()
 
     def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
         self._document = ['']
@@ -70,12 +71,14 @@ Builder = XMLBuilder  # backwards compatibility
 class HTMLBuilder(XMLBuilder):
 
     _end_empty_tag = '>'
+    # see https://developer.mozilla.org/en-US/docs/Glossary/Void_element
+    _empty_tags = set('area base br col embed hr img input link meta source track wbr'.split())
 
     def __init__(self, encoding='utf-8', indent='  ', stream=None):
         super().__init__(version=None, encoding=encoding, indent=indent, stream=stream)
         if encoding:
             self._write('<!DOCTYPE html>')
-            self.meta(None, charset=encoding)
+            self.meta(charset=encoding)
 
 
 class Element:
@@ -103,7 +106,7 @@ class Element:
             f' {nameprep(attr)}={safeattr(value)}'
             for attr, value in attrs.items() if value is not None
         )
-        if _value is None:
+        if _value is None or self._name in self._builder._empty_tags:
             var = self._builder._end_empty_tag
         elif _value is not self._empty:
             var = f'>{safevalue(_value)}</{self._name}>'
@@ -150,8 +153,9 @@ if __name__ == "__main__":
     html = HTMLBuilder()
     with html.html(lang='en'):
         html.p('p1')
-        html.br(None, _pre="<br> next:")
-        html.p('p2')
+        html.br(_pre="<br> next:")
+        with html.p('p2'):
+            html.label('Some label', for_='some_field', _post=':').input(type='text', value='', id='some_field')
     actual = str(html)
     assert '<p>p1</p>' in actual
     assert '&lt;br&gt; next:<br>' in actual
