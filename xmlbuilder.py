@@ -104,9 +104,12 @@ class Element:
             for attr, value in attrs.items() if value is not None
         )
         if _value is None:
-            self._builder._write(f'{safevalue(_pre)}<{self._name}{self._attrs}{self._builder._end_empty_tag}{safevalue(_post)}')
+            var = self._builder._end_empty_tag
         elif _value is not self._empty:
-            self._builder._write(f'{safevalue(_pre)}<{self._name}{self._attrs}>{safevalue(_value)}</{self._name}>{safevalue(_post)}')
+            var = f'>{safevalue(_value)}</{self._name}>'
+        else:
+            return self
+        self._builder._write(f'{safevalue(_pre)}<{self._name}{self._attrs}{var}{safevalue(_post)}')
         return self
 
     def __getitem__(self, value):
