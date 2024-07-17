@@ -17,23 +17,42 @@ def nameprep(name):
 
 
 class Safe(str):
+    """A class that holds "safe" content that is not escaped when used"""
     pass
 
 
 def safevalue(value):
+    """Escape unsafe values as HTML content"""
     return value if isinstance(value, Safe) else escape(value)
 
 
 def safeattr(value):
+    """Quote unsafe attribute values"""
     return f'"{value}"' if isinstance(value, Safe) else quoteattr(value)
 
 
 class XMLBuilder:
+    """The "document" class for generating XML content.
+
+    It supports different accessors to generate content:
+
+    XMLBuilder.element returns a new Element with its own accessors.
+
+    XMLBuilder[content] emits content.
+    """
 
     _end_empty_tag = '/>'
     _empty_tags = set()
 
     def __init__(self, version='1.0', encoding='utf-8', indent='  ', stream=None):
+        """Initialize a new XML document. The XML header is only written if both
+        `version` and `encoding` are not empty.
+        `indent` can be None to output everything on one line, the empty string to
+        output multiple lines without indentation, or a whitespace string that is repeated
+        for each indentation level.
+        If a `stream` is passed, content is output directly to the stream, and __str__()
+        will return an empty string.
+        """
         self._document = ['']
         self._encoding = encoding
         self._indentation = 0
@@ -43,19 +62,27 @@ class XMLBuilder:
             self._write(f'<?xml version="{version}" encoding="{encoding}"?>')
 
     def __getattr__(self, name):
+        """Return a new element with tag `name`. If `name` is a Python keyword, append
+        an underline character '_'. If `name` should contain a colon ':', use two
+        underlines '__' instead."""
         return Element(name, self)
 
     def __getitem__(self, value):
+        """Output `value` as content."""
         self._write(safevalue(value))
         return self
 
     def __str__(self):
+        """Return the document so far, unless a stream was passed to __init__()"""
         return ''.join(self._document)
 
     def __bytes__(self):
+        """Return the document so far as bytes in the desired encoding, with
+        non-representable entities replaced by their character references."""
         return str(self).encode(self._encoding, 'xmlcharrefreplace')
 
     def _write(self, line, indent=0):
+        """Write a new line of the document. Indentation can be adjusted."""
         if indent < 0:
             self._indentation += indent
         if self._indent is not None:
@@ -75,6 +102,14 @@ class HTMLBuilder(XMLBuilder):
     _empty_tags = set('area base br col embed hr img input link meta source track wbr'.split())
 
     def __init__(self, encoding='utf-8', indent='  ', stream=None):
+        """Initialize a new HTML document. The HTML header is only written if
+        `encoding` is not empty.
+        `indent` can be None to output everything on one line, the empty string to
+        output multiple lines without indentation, or a whitespace string that is repeated
+        for each indentation level.
+        If a `stream` is passed, content is output directly to the stream, and __str__()
+        will return an empty string.
+        """
         super().__init__(version=None, encoding=encoding, indent=indent, stream=stream)
         if encoding:
             self._write('<!DOCTYPE html>')
@@ -85,14 +120,17 @@ class Element:
     _empty = object()
 
     def __init__(self, name, builder):
+        """Initialize a new Element."""
         self._name = nameprep(name)
         self._builder = builder
         self._attrs = ''
 
     def __getattr__(self, name):
+        """Return a new subelement of this Element with tag `name`."""
         return Element(name, self._builder)
 
     def __enter__(self):
+        """Open this Element. On exit from the context manager, it will be closed."""
         self._builder._write(f'<{self._name}{self._attrs}>', +1)
         return self
 
@@ -102,6 +140,12 @@ class Element:
         self._builder._write(f'</{self._name}>', -1)
 
     def __call__(self, _value=_empty, _pre='', _post='', **attrs):
+        """Output this Element, optionally with content.
+        If `_value` is a string, it becomes the content. If it is None, an empty tag is produced.
+        If it is `_empty`, nothing at all is output. This is mainly used with `__enter__()`.
+        `_pre` and `_post` is content that is prefixed or postfixed to the element without intervening whitespace.
+        Other keyword arguments become attributes of the element.
+        """
         self._attrs = ''.join(
             f' {nameprep(attr)}={safeattr(value)}'
             for attr, value in attrs.items() if value is not None
@@ -116,6 +160,7 @@ class Element:
         return self
 
     def __getitem__(self, value):
+        """Output `value` as text content."""
         self._builder._write(safevalue(value))
         return self
 
