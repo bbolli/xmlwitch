@@ -81,7 +81,8 @@ class Element:
 
     def __call__(self, _value=_empty, **attrs):
         self._serialized_attrs = ''.join(
-            f' {nameprep(attr)}={quoteattr(value)}' for attr, value in attrs.items()
+            f' {nameprep(attr)}={quoteattr(value)}'
+            for attr, value in attrs.items() if value is not None
         )
         if _value is None:
             self._builder._write(f'<{self._name}{self._serialized_attrs}/>')
