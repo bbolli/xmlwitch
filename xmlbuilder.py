@@ -2,7 +2,11 @@ from types import TracebackType
 import typing as t
 from xml.sax.saxutils import escape, quoteattr
 
-__all__ = ['__author__', '__license__', 'Builder', 'XMLBuilder', 'HTMLBuilder', 'Safe', 'Element']
+__all__ = [
+    '__author__', '__license__',
+    'Builder', 'XMLBuilder', 'HTMLBuilder', 'Safe', 'Element',
+    'escape', 'quoteattr'
+]
 __author__ = ('Beat Bolli', 'me+python@drbeat.li', 'https://drbeat.li/py/')
 __license__ = "GPL3+"
 
