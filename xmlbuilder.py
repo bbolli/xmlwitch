@@ -29,8 +29,9 @@ def safevalue(value: str) -> str:
 
 
 def safeattr(value: str) -> str:
-    """Quote unsafe attribute values"""
-    return f'"{value}"' if isinstance(value, Safe) else quoteattr(value)
+    """Escape unsafe attribute values.
+    Safe values must include the enclosing quotes, if needed."""
+    return value if isinstance(value, Safe) else quoteattr(value)
 
 
 class XMLBuilder:
@@ -90,6 +91,15 @@ class XMLBuilder:
         non-representable entities replaced by their character references."""
         return str(self).encode(self._encoding, 'xmlcharrefreplace')
 
+    def _attr(self, attr: str, value: str | bool) -> Safe:
+        """Handle the quoting of one attribute and its value. True values are
+        written as `attr="attr"`, False values suppress the whole attribute."""
+        if isinstance(value, bool):
+            if not value:
+                return Safe('')
+            value = attr
+        return Safe(nameprep(attr) + '=' + safeattr(value))
+
     def _write(self, line: str, indent: int = 0) -> None:
         """Write a new line of the document. Indentation can be adjusted."""
         if indent < 0:
@@ -124,6 +134,18 @@ class HTMLBuilder(XMLBuilder):
         if encoding:
             self._write('<!DOCTYPE html>')
             self.meta(charset=encoding)
+
+    def _attr(self, attr: str, value: str | bool) -> Safe:
+        """Handle one attribute and its value.
+        `True` values and values that match the attribute name are written in
+        "empty attribute syntax", i.e. just the attribute name; `False` values are suppressed.
+        Values that don't need to be quoted are written as-is."""
+        if isinstance(value, bool) and value or attr == value:
+            return Safe(nameprep(attr))
+        # https://dev.w3.org/html5/spec-LC/syntax.html#attributes-0
+        if not value or any(c in value for c in ' "\'=<>`'):
+            return super()._attr(attr, value)
+        return Safe(f'{nameprep(attr)}={value}')
 
 
 class Element:
@@ -160,7 +182,7 @@ class Element:
         return True
 
     def __call__(self, _value: str | Empty | None = _empty, /,
-                 _pre: str = '', _post: str = '', **attrs: str) -> 'Element':
+                 _pre: str = '', _post: str = '', **attrs: str | bool | None) -> 'Element':
         """Output this Element, optionally with content.
         If `_value` is a string, it becomes the content. If it is None, an empty tag is produced.
         If it is `_empty`, nothing at all is output. This is mainly used with `__enter__()`.
@@ -168,9 +190,11 @@ class Element:
         Other keyword arguments become attributes of the element.
         """
         self._attrs = ''.join(
-            f' {nameprep(attr)}={safeattr(value)}'
-            for attr, value in attrs.items() if value is not None
+            ' ' + self._builder._attr(attr, value)
+            for attr, value in attrs.items() if value is not None and value is not False
         )
+        if self._attrs.endswith('/'):
+            self._attrs += ' '
         if _value is None or self._name in self._builder._empty_tags:
             var = self._builder._end_empty_tag
         elif not isinstance(_value, self.Empty):
@@ -200,12 +224,12 @@ if __name__ == "__main__":
         with xml.entry:
             xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
             xml.quoting("< > & ' \"", attr="< > & ' \"")
-            xml.safe(Safe("<em> &amp; </em> ' \""), attr=Safe("&lt; &gt; &amp; '"))
+            xml.safe(Safe("<em> &amp; </em> ' \""), attr=Safe("'&lt; &gt; &amp;'"))
             xml.str("¡Thìs ïs å tést!", attr='“—”')
             xml.title('Atom-Powered Robots Run Amok')
             xml.link(None, href='http://example.org/2003/12/13/atom03')
             xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
-            xml.updated('2003-12-13T18:30:02Z')
+            xml.updated('2003-12-13T18:30:02Z', utc=True, local=False)
             xml.summary('Some text.')
             with xml.content(type='xhtml').div(xmlns='http://www.w3.org/1999/xhtml'):
                 xml.label('Some label', for_='some_field', _post=':').input(None, type='text', value='', id='some_field')
@@ -218,12 +242,14 @@ if __name__ == "__main__":
     print()
     html = HTMLBuilder()
     with html.html(lang='en'):
-        html.p('p1')
+        html.p('p1', class_='c1 c2')
         html.br(_pre="<br> next:")
-        with html.p('p2'):
-            html.label('Some label', for_='some_field', _post=':').input(type='text', value='', id='some_field')
+        with html.p(class_='c3'):
+            html.label('Some label', for_='some_field', _post=':')
+            html.input(type='text', value='', id='some_field', disabled=True, hidden='hidden', max_length='10')
     actual = str(html)
-    assert '<p>p1</p>' in actual
-    assert '&lt;br&gt; next:<br>' in actual
-    assert '<p>p2</p>' in actual
     print(actual)
+    assert '<p class="c1 c2">p1</p>' in actual
+    assert '&lt;br&gt; next:<br>' in actual
+    assert '<p class=c3>' in actual
+    assert ' disabled hidden ' in actual
