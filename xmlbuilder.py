@@ -23,15 +23,15 @@ class Safe(str):
     pass
 
 
-def safevalue(value: str) -> str:
+def safevalue(value: str) -> Safe:
     """Escape unsafe values as HTML content"""
-    return value if isinstance(value, Safe) else escape(value)
+    return value if isinstance(value, Safe) else t.cast(Safe, escape(value))
 
 
-def safeattr(value: str) -> str:
+def safeattr(value: str) -> Safe:
     """Escape unsafe attribute values.
     Safe values must include the enclosing quotes, if needed."""
-    return value if isinstance(value, Safe) else quoteattr(value)
+    return value if isinstance(value, Safe) else t.cast(Safe, quoteattr(value))
 
 
 class XMLBuilder:
