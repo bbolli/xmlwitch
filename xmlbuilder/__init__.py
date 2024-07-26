@@ -2,11 +2,7 @@ from types import TracebackType
 import typing as t
 from xml.sax.saxutils import escape, quoteattr
 
-__all__ = [
-    '__author__', '__license__',
-    'Builder', 'XMLBuilder', 'HTMLBuilder', 'Safe', 'Element',
-    'escape', 'quoteattr'
-]
+__all__ = [ '__author__', '__license__', 'Builder', 'XMLBuilder', 'HTMLBuilder', 'Safe', 'Element']
 __author__ = ('Beat Bolli', 'me+python@drbeat.li', 'https://drbeat.li/py/')
 __license__ = "GPL3+"
 
@@ -23,19 +19,28 @@ def nameprep(name: str) -> str:
 
 
 class Safe(str):
-    """A class that holds "safe" content that is not escaped when used"""
-    pass
+    """A class that holds "safe" content that is not escaped when used."""
+
+    @classmethod
+    def text(cls, value: str) -> t.Self:
+        """Escape text to make it safe."""
+        return cls(escape(value))
+
+    @classmethod
+    def attr(cls, value: str) -> t.Self:
+        """Escape an attribute value to make it safe."""
+        return cls(quoteattr(value))
 
 
 def safetext(value: str) -> Safe:
     """Escape unsafe values as HTML content"""
-    return value if isinstance(value, Safe) else t.cast(Safe, escape(value))
+    return value if isinstance(value, Safe) else Safe.text(value)
 
 
 def safeattr(value: str) -> Safe:
     """Escape unsafe attribute values.
     Safe values must include the enclosing quotes, if needed."""
-    return value if isinstance(value, Safe) else t.cast(Safe, quoteattr(value))
+    return value if isinstance(value, Safe) else Safe.attr(value)
 
 
 class XMLBuilder:
