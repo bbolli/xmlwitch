@@ -1,3 +1,4 @@
+from __future__ import annotations
 from types import TracebackType
 import typing as t
 from xml.sax.saxutils import escape, quoteattr
@@ -80,13 +81,13 @@ class XMLBuilder:
         if version and encoding:
             self._write(f'<?xml version="{version}" encoding="{encoding}"?>')
 
-    def __getattr__(self, name: str) -> 'Element':
+    def __getattr__(self, name: str) -> Element:
         """Return a new element with tag `name`. If `name` is a Python keyword, append
         an underline character '_'. If `name` should contain a colon ':', use two
         underlines '__' instead."""
         return Element(name, self)
 
-    def __getitem__(self, value: str) -> 'XMLBuilder':
+    def __getitem__(self, value: str) -> t.Self:
         """Output `value` as content."""
         self._write(safetext(value))
         return self
@@ -174,11 +175,11 @@ class Element:
         self._builder = builder
         self._attrs = ''
 
-    def __getattr__(self, name: str) -> 'Element':
+    def __getattr__(self, name: str) -> t.Self:
         """Return a new subelement of this Element with tag `name`."""
-        return Element(name, self._builder)
+        return self.__class__(name, self._builder)
 
-    def __enter__(self) -> 'Element':
+    def __enter__(self) -> t.Self:
         """Open this Element. On exit from the context manager, it will be closed."""
         self._builder._write(f'<{self._name}{self._attrs}>', +1)
         return self
@@ -191,7 +192,7 @@ class Element:
         return True
 
     def __call__(self, _value: str | Empty | None = _empty, /,
-                 _pre: str = '', _post: str = '', **attrs: str | bool | None) -> 'Element':
+                 _pre: str = '', _post: str = '', **attrs: str | bool | None) -> t.Self:
         """Output this Element, optionally with content.
         If `_value` is a string, it becomes the content. If it is None, an empty tag is produced.
         If it is `_empty`, nothing at all is output. This is mainly used with `__enter__()`.
@@ -213,7 +214,7 @@ class Element:
         self._builder._write(f'{safetext(_pre)}<{self._name}{self._attrs}{var}{safetext(_post)}')
         return self
 
-    def __getitem__(self, value: str) -> 'Element':
+    def __getitem__(self, value: str) -> t.Self:
         """Output `value` as text content."""
         self._builder._write(safetext(value))
         return self
