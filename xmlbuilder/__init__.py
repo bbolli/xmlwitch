@@ -14,7 +14,7 @@ del keyword
 
 
 def nameprep(name: str) -> str:
-    """Undo keyword and colon mangling"""
+    """Undo keyword and colon mangling."""
     name = kwunmangle.get(name, name)
     return name.replace('__', ':')
 
@@ -83,8 +83,9 @@ class XMLBuilder:
 
     def __getattr__(self, name: str) -> Element:
         """Return a new element with tag `name`. If `name` is a Python keyword, append
-        an underline character '_'. If `name` should contain a colon ':', use two
-        underlines '__' instead."""
+        an underline character '_'. Note that `hash`, `id` and `type` are not keywords,
+        but predefined functions. If `name` needs to contain a colon ':', use two
+        underlines `__` instead."""
         return Element(name, self)
 
     def __getitem__(self, value: str) -> t.Self:
