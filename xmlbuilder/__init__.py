@@ -27,7 +27,7 @@ class Safe(str):
     pass
 
 
-def safevalue(value: str) -> Safe:
+def safetext(value: str) -> Safe:
     """Escape unsafe values as HTML content"""
     return value if isinstance(value, Safe) else t.cast(Safe, escape(value))
 
@@ -83,7 +83,7 @@ class XMLBuilder:
 
     def __getitem__(self, value: str) -> 'XMLBuilder':
         """Output `value` as content."""
-        self._write(safevalue(value))
+        self._write(safetext(value))
         return self
 
     def __str__(self) -> str:
@@ -202,15 +202,15 @@ class Element:
         if _value is None or self._name in self._builder._empty_tags:
             var = self._builder._end_empty_tag
         elif not isinstance(_value, self.Empty):
-            var = f'>{safevalue(_value)}</{self._name}>'
+            var = f'>{safetext(_value)}</{self._name}>'
         else:
             return self
-        self._builder._write(f'{safevalue(_pre)}<{self._name}{self._attrs}{var}{safevalue(_post)}')
+        self._builder._write(f'{safetext(_pre)}<{self._name}{self._attrs}{var}{safetext(_post)}')
         return self
 
     def __getitem__(self, value: str) -> 'Element':
         """Output `value` as text content."""
-        self._builder._write(safevalue(value))
+        self._builder._write(safetext(value))
         return self
 
 
