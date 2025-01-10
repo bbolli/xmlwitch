@@ -2,6 +2,7 @@
 idiomatic XML and HTML5 generation through context managers."""
 
 from __future__ import annotations
+import re
 from types import TracebackType
 import typing as t
 from xml.sax.saxutils import escape, quoteattr
@@ -136,6 +137,8 @@ class HTMLBuilder(XMLBuilder):
     _end_empty_tag = '>'
     # see https://developer.mozilla.org/en-US/docs/Glossary/Void_element
     _empty_tags = set('area base br col embed hr img input link meta source track wbr'.split())
+    # see https://dev.w3.org/html5/spec-LC/syntax.html#attributes-0
+    _attr_quote = re.compile('[ "\'=<>`]')
 
     def __init__(self, encoding: str = 'utf-8', indent: str | None = '  ',
                  stream: t.TextIO | None = None) -> None:
@@ -159,8 +162,7 @@ class HTMLBuilder(XMLBuilder):
         Values that don't need to be quoted are written as-is."""
         if isinstance(value, bool) and value or attr == value:
             return Safe(nameprep(attr))
-        # https://dev.w3.org/html5/spec-LC/syntax.html#attributes-0
-        if not value or any(c in value for c in ' "\'=<>`'):
+        if not value or self._attr_quote.search(value):
             return super()._attr(attr, value)
         return Safe(f'{nameprep(attr)}={value}')
 
