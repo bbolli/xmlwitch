@@ -20,10 +20,9 @@ with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
         xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
         xml.updated('2003-12-13T18:30:02Z', utc=True, local=False)
         xml.summary('Some text.')
-        with xml.content(type='xhtml'):
-            with xml.div(xmlns='http://www.w3.org/1999/xhtml'):
-                xml.label('Some label', for_='some_field', _post=':')
-                xml.input(None, type='text', value='', id='some_field')
+        with xml.content(type='xhtml'), xml.div(xmlns='http://www.w3.org/1999/xhtml'):
+            xml.label('Some label', for_='some_field', _post=':')
+            xml.input(type='text', value='', id='some_field')
 
 xml = XMLBuilder(encoding='iso-8859-1')
 xml.tag('€')
