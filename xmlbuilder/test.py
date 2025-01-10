@@ -38,10 +38,15 @@ with html.html(lang='en'):
     with html.p(class_='c3'):
         html.label('Some label', for_='some_field', _post=':')
         html.input(type='text', value='', id='some_field', disabled=True,
-                   hidden='hidden', max_length='10')
+                   hidden='hidden', max_length='10', false=False)
+    html.a('link', href='https://example.org/', false=None)
+    html.a('link', href='https://example.org/?q=abc')
 actual = str(html)
 print(actual)
 assert '<p class="c1 c2">p1</p>' in actual
 assert '&lt;br&gt; next:<br>' in actual
 assert '<p class=c3>' in actual
-assert ' disabled hidden ' in actual
+assert ' disabled hidden max_length=10>' in actual
+assert ' false' not in actual
+assert '.org/ >' in actual
+assert '?q=abc">' in actual
