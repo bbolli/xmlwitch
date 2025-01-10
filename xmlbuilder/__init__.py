@@ -66,7 +66,8 @@ class XMLBuilder:
     __write: t.Any  # doesn't work: t.Callable[[str], t.Any]
 
     def __init__(self, version: str = '1.0', encoding: str = 'utf-8',
-                 indent: str | None = '  ', stream: t.TextIO | None = None) -> None:
+                 indent: str | None = '  ', stream: t.TextIO | None = None,
+                 empty_tags: t.Iterable | None = None) -> None:
         """Initialize a new XML document. The XML header is only written if both
         `version` and `encoding` are not empty.
         `indent` can be None to output everything on one line, the empty string to
@@ -74,11 +75,14 @@ class XMLBuilder:
         for each indentation level.
         If a `stream` is passed, content is output directly to the stream, and __str__()
         will return an empty string.
+        `empty_tags` is a sequence of "void elements" that have no content.
         """
         self._document = ['']
         self._encoding = encoding
         self._indentation = 0
         self._indent = indent
+        if empty_tags is not None:
+            self._empty_tags = set(empty_tags)
         self.__write = stream.write if stream else self._document.append
         if version and encoding:
             self._write(f'<?xml version="{version}" encoding="{encoding}"?>')

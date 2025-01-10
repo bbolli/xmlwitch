@@ -2,11 +2,10 @@ import sys
 
 from . import XMLBuilder, HTMLBuilder, Safe
 
-xml = XMLBuilder(stream=sys.stdout)
+xml = XMLBuilder(stream=sys.stdout, empty_tags=('link', 'input'))
 with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
     xml.title('Example Feed')
-    # None is required for empty elements
-    xml.link(None, href='http://example.org/')
+    xml.link(href='http://example.org/')
     xml.updated('2003-12-13T18:30:02Z')
     with xml.author:
         xml.name('John Doe').email('jd@example.org')
@@ -17,7 +16,7 @@ with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
         xml.safe(Safe("<em> &amp; </em> ' \""), attr=Safe("'&lt; &gt; &amp;'"))
         xml.str("¡Thìs ïs å tést!", attr='“—”')
         xml.title('Atom-Powered Robots Run Amok')
-        xml.link(None, href='http://example.org/2003/12/13/atom03')
+        xml.link(href='http://example.org/2003/12/13/atom03')
         xml.id('urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a')
         xml.updated('2003-12-13T18:30:02Z', utc=True, local=False)
         xml.summary('Some text.')
