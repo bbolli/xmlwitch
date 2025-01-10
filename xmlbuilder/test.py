@@ -11,7 +11,8 @@ with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
         xml.name('John Doe').email('jd@example.org')
     xml.id('urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6')
     with xml.entry:
-        xml.my__elem("Hello these are namespaces!", xmlns__my='http://example.org/ns/', my__attr='what?')
+        xml.my__elem("Hello these are namespaces!",
+                     xmlns__my='http://example.org/ns/', my__attr='what?')
         xml.quoting("< > & ' \"", attr="< > & ' \"")
         xml.safe(Safe("<em> &amp; </em> ' \""), attr=Safe("'&lt; &gt; &amp;'"))
         xml.str("¡Thìs ïs å tést!", attr='“—”')
@@ -36,7 +37,8 @@ with html.html(lang='en'):
     html.br(_pre="<br> next:")
     with html.p(class_='c3'):
         html.label('Some label', for_='some_field', _post=':')
-        html.input(type='text', value='', id='some_field', disabled=True, hidden='hidden', max_length='10')
+        html.input(type='text', value='', id='some_field', disabled=True,
+                   hidden='hidden', max_length='10')
 actual = str(html)
 print(actual)
 assert '<p class="c1 c2">p1</p>' in actual

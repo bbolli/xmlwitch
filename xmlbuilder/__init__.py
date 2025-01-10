@@ -203,8 +203,8 @@ class Element:
         """Output this Element, optionally with content.
         If `_value` is a string, it becomes the content. If it is None, an empty tag is produced.
         If it is `_empty`, nothing at all is output. This is mainly used with `__enter__()`.
-        `_pre` and `_post` is content that is prefixed or postfixed to the element without intervening whitespace.
-        Other keyword arguments become attributes of the element.
+        `_pre` and `_post` is content that is prefixed or postfixed to the element without
+        intervening whitespace. Other keyword arguments become attributes of the element.
         """
         self._attrs = ''.join(
             ' ' + self._builder._attr(attr, value)
