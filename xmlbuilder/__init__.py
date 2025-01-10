@@ -111,10 +111,8 @@ class XMLBuilder:
 
     def _attr(self, attr: str, value: str | bool) -> Safe:
         """Handle the quoting of one attribute and its value. True values are
-        written as `attr="attr"`, False values suppress the whole attribute."""
-        if isinstance(value, bool):
-            if not value:
-                return Safe('')
+        written as `attr="attr"`, `False` and `None` values suppress the whole attribute."""
+        if value is True:
             value = attr
         return Safe(nameprep(attr) + '=' + safeattr(value))
 
@@ -157,10 +155,10 @@ class HTMLBuilder(XMLBuilder):
 
     def _attr(self, attr: str, value: str | bool) -> Safe:
         """Handle one attribute and its value.
-        `True` values and values that match the attribute name are written in
-        "empty attribute syntax", i.e. just the attribute name; `False` values are suppressed.
-        Values that don't need to be quoted are written as-is."""
-        if isinstance(value, bool) and value or attr == value:
+        Values that are `True` or that match the attribute name are written in
+        "empty attribute syntax", i.e. just the attribute name; `False` and `None` values
+        suppress the whole attribute. The value is put between quotes only if necessary."""
+        if value is True or attr == value:
             return Safe(nameprep(attr))
         if not value or self._attr_quote.search(value):
             return super()._attr(attr, value)
@@ -210,7 +208,7 @@ class Element:
         """
         self._attrs = ''.join(
             ' ' + self._builder._attr(attr, value)
-            for attr, value in attrs.items() if value is not None and value is not False
+            for attr, value in attrs.items() if value not in (None, False)
         )
         if self._attrs.endswith('/'):
             self._attrs += ' '
