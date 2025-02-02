@@ -2,7 +2,36 @@ import sys
 
 from . import XMLBuilder, HTMLBuilder, Safe
 
-xml = XMLBuilder(stream=sys.stdout, empty_tags=('link', 'input'))
+
+def xml_note(b: XMLBuilder) -> str:
+    with b.note:
+        b.to('Tove').from_('Jani').body('Ping?')
+    return str(b)
+
+
+actual = xml_note(XMLBuilder(version='', indent=None))
+print(actual)
+assert actual == '<note><to>Tove</to><from>Jani</from><body>Ping?</body></note>'
+
+actual = xml_note(XMLBuilder(version='', indent=''))
+print(actual)
+assert actual == '''<note>
+<to>Tove</to>
+<from>Jani</from>
+<body>Ping?</body>
+</note>
+'''
+
+actual = xml_note(XMLBuilder(version='', indent='\t'))
+print(actual)
+assert actual == '''<note>
+\t<to>Tove</to>
+\t<from>Jani</from>
+\t<body>Ping?</body>
+</note>
+'''
+
+xml = XMLBuilder(empty_tags=('link', 'input'))
 with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
     xml.title('Example Feed')
     xml.link(href='http://example.org/')
@@ -25,12 +54,18 @@ with xml.feed(xmlns='http://www.w3.org/2005/Atom'):
             xml.label('Some label', for_='some_field', _post=':')
             xml.input(type='text', value='', id='some_field')
 
+actual = str(xml)
+print(actual)
+assert actual.startswith('<?xml version="1.0" encoding="utf-8"?>\n')
+assert '<feed xmlns="http://www.w3.org/2005/Atom">' in actual
+
 xml = XMLBuilder(encoding='iso-8859-1')
 xml.tag('€')
-assert '€' in str(xml)
+actual = str(xml)
+print(actual)
+assert '€' in actual
 assert b'&#8364;' in bytes(xml)
 
-print()
 html = HTMLBuilder()
 with html.html(lang='en'):
     html.p('p1', class_='c1 c2')
