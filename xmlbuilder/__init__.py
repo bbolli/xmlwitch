@@ -68,7 +68,7 @@ class XMLBuilder:
 
     def __init__(self, version: str = '1.0', encoding: str = 'utf-8',
                  indent: str | None = '  ', stream: t.TextIO | None = None,
-                 empty_tags: t.Iterable | None = None) -> None:
+                 empty_tags: t.Iterable[str] | None = None) -> None:
         """Initialize a new XML document. The XML header is only written if both
         `version` and `encoding` are not empty.
         `indent` can be None to output everything on one line, the empty string to
