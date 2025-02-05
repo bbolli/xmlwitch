@@ -109,9 +109,9 @@ class XMLBuilder:
         non-representable entities replaced by their character references."""
         return str(self).encode(self._encoding, 'xmlcharrefreplace')
 
-    def _attr(self, attr: str, value: str | bool) -> Safe:
+    def _attr(self, attr: str, value: str | t.Literal[True]) -> Safe:
         """Handle the quoting of one attribute and its value. True values are
-        written as `attr="attr"`, `False` and `None` values suppress the whole attribute."""
+        written as `attr="attr"`."""
         if value is True:
             value = attr
         return Safe(nameprep(attr) + '=' + safeattr(value))
@@ -153,11 +153,11 @@ class HTMLBuilder(XMLBuilder):
             self._write('<!DOCTYPE html>')
             self.meta(charset=encoding)
 
-    def _attr(self, attr: str, value: str | bool) -> Safe:
+    def _attr(self, attr: str, value: str | t.Literal[True]) -> Safe:
         """Handle one attribute and its value.
         Values that are `True` or that match the attribute name are written in
-        "empty attribute syntax", i.e. just the attribute name; `False` and `None` values
-        suppress the whole attribute. The value is put between quotes only if necessary."""
+        "empty attribute syntax", i.e. just the attribute name. The value is
+        put between quotes only if necessary."""
         if value is True or attr == value:
             return Safe(nameprep(attr))
         if not value or self._attr_quote.search(value):
@@ -205,9 +205,12 @@ class Element:
         If it is `_empty`, nothing at all is output. This is mainly used with `__enter__()`.
         `_pre` and `_post` is content that is prefixed or postfixed to the element without
         intervening whitespace. Other keyword arguments become attributes of the element.
+        Attributes with `False` or `None` values are suppressed.
         """
+        # the "type: ignore" is necessary because mypy doesn't grok that None
+        # and False values are filtered out.
         self._attrs = ''.join(
-            ' ' + self._builder._attr(attr, value)
+            ' ' + self._builder._attr(attr, value)  # type: ignore[arg-type]
             for attr, value in attrs.items() if value not in (None, False)
         )
         if self._attrs.endswith('/'):
